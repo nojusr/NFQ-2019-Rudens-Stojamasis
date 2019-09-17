@@ -1,0 +1,19 @@
+{
+    "name": "nojusr/nfq2019stojamasis",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "nojus",
+            "email": "nojusr@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "src\\":"sources/"
+        }
+    },
+    "require": {
+        "symfony/yaml": "^4.3"
+    }
+}
