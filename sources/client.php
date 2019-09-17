@@ -26,7 +26,8 @@ class client {
         $this->email = "";
         $this->reason = "";
         $this->time_added = time();
-        $this->appointment_start_time = time();
+        $this->appointment_start_time = 0;
+        $this->appointment_end_time = 0;
         $this->appointment_finished_bool = 0;
     }
     
@@ -35,7 +36,7 @@ class client {
         // finds the specialistID assigned to client or gives
         // the client to the specialist with the least amount of clients
         
-        if ($this->specialist_id === -1){// client already has specialist
+        if ($this->specialist_id !== -1){// client already has specialist
             return;                      // no need for a new one
         }
         
@@ -43,11 +44,7 @@ class client {
         
         try {
             $query = $pdo->prepare($sql);
-            $chk = $query->execute();
-            
-            if ($chk === false){
-                //TODO: proper error handling
-            }
+            $query->execute();
             
             $output = $query->fetch();
             $this->specialist_id = $output[0];
@@ -163,6 +160,8 @@ class client {
             
             $query = $pdo->prepare($sql);
             
+            
+            
             $chk = $query->execute(array(
                 ":client_id" => $this->client_id,
                 ":spec_id" => $this->specialist_id, 
@@ -183,8 +182,17 @@ class client {
                 ":af2" => $this->appointment_finished_bool
             ));
             
+            
             if ($chk === false){
                 //TODO: proper error handling
+            }
+            
+            
+            // if there is no ID set (like when a new client is created)
+            // grab it from the database and set it
+            if ($this->client_id == NULL){
+                $id = $pdo->lastInsertId();
+                $this->client_id = $id;
             }
             
         } catch(PDOException $e) {
