@@ -22,10 +22,10 @@ try {
     throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
 
-//$testClient = new src\entity\client();
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {// if the request is a POST request
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
     
     $input_error = false;
     $error_text = "<div class=\"alert alert-danger\" >Nepavyko pridėti susitikimo: <br>";
