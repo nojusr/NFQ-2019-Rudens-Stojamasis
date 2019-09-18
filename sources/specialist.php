@@ -18,7 +18,58 @@ class specialist {
         $this->time_added = 0;
         $this->clients_served = 0;
     }
-
+    
+    public function calcAvgWorkTime($pdo){
+        // calculates the average amount of time spent serving a client (in unix time)
+        // if there are no clients, returns 0
+        
+        if ($this->clients_served < 1){
+            return -1;
+        }
+        
+        if ($this->id === -1){
+            return -1;
+        }
+        
+        // get all of the finished appointments
+        $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 1 LIMIT 50";
+        
+        $clients = array();
+        
+        try {
+            
+            $query = $pdo->prepare($sql);
+            $chk = $query->execute(array(
+                ":sid" => $this->id,
+            ));
+            
+            $clients = $query->fetchAll();
+            
+            if ($chk == false) {
+                return -1;
+            }
+            
+        } catch(PDOException $e) {
+            //TODO: proper error handling 
+            echo "Exception -> ";
+            var_dump($e->getMessage());
+        }
+        
+        // calculate the average time spent working on a single client
+        $client_time_sum = 0;
+        
+        foreach ($clients as $client) {
+            $client_time_sum += $client["appointment_end_time"] - $client["appointment_start_time"];
+        }
+        
+        $avg_time_spent = $client_time_sum/count($clients);
+        
+        
+        return $avg_time_spent;
+        
+    }
+    
+    
     public function generateSpecialistByID($pdo, $id) {
         // gets all the values of the object when given a client ID
         
@@ -113,7 +164,7 @@ class specialist {
             
         } catch(PDOException $e) {
             //TODO: proper error handling
-            echo 'Exception -> ';
+            echo "Exception -> ";
             var_dump($e->getMessage());
         }
     }
