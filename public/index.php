@@ -96,23 +96,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
         <div class="container"> 
             <h3 class="mt-3 mb-3">Susitikimo forma:</h3>
             <form class="mt-1" action="index.php" method="post">
-              <div class="form-group">
-                <label for="input_name">Vardas</label>
-                <input type="text" class="form-control" required name="input_name" placeholder="Įveskite vardą">
-              </div>
-              <div class="form-group">
-                <label for="input_surname">Pavardė (neprivaloma)</label>
-                <input type="text" class="form-control" name="input_surname" placeholder="Įveskite pavardę">
-              </div>              
-              <div class="form-group">
-                <label for="input_email">E. Paštas (neprivalomas)</label>
-                <input type="email" class="form-control" name="input_email" placeholder="Įveskite e.paštą">
-              </div>              
-              <div class="form-group">
-                <label for="input_reason">Kodėl norite susitikti? (neprivaloma)</label>
-                <input type="text" class="form-control" name="input_reason" placeholder="Įveskite susitikimo temą">
-              </div>
-              <button type="submit" class="btn btn-primary">Pateikti</button>
+                <div class="form-group">
+                    <label for="input_name">Vardas</label>
+                    <input type="text" class="form-control" required name="input_name" placeholder="Įveskite vardą">
+                </div>
+                <div class="form-group">
+                    <label for="input_surname">Pavardė (neprivaloma)</label>
+                    <input type="text" class="form-control" name="input_surname" placeholder="Įveskite pavardę">
+                </div>              
+                <div class="form-group">
+                    <label for="input_email">E. Paštas (neprivalomas)</label>
+                    <input type="email" class="form-control" name="input_email" placeholder="Įveskite e.paštą">
+                </div>              
+                <div class="form-group">
+                    <label for="input_reason">Kodėl norite susitikti? (neprivaloma)</label>
+                    <input type="text" class="form-control" name="input_reason" placeholder="Įveskite susitikimo temą">
+                </div>
+                <button type="submit" class="btn btn-primary">Pateikti</button>
             </form>
         </div>
     </body>

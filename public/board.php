@@ -77,6 +77,8 @@ function outputTableData($pdo) {
         if ($wait_int_time === -1){
             // calculateWaitTime returned an error
             $wait_time = "N/A";
+        } else if ($wait_int_time === 0) {
+            $wait_time = "Dabar";
         } else {
             // everything is good, convert the time into "h:m:s"
             $wait_time = gmdate("H:i:s", intval($client->calculateWaitTime($pdo), 10));
