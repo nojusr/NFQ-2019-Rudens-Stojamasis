@@ -60,19 +60,7 @@ class client {
          
     }
     
-    public function calculateWaitTime($pdo) {
-        // function that calculates the wait time, when taking into
-        // consideration the average wait time for the assigned
-        // specialist
-        
-
-        
-        // get the average time spent on a client
-        $assigned_spec = new specialist();
-        $assigned_spec->generateSpecialistByID($pdo, $this->specialist_id);
-        $avg_time = $assigned_spec->calcAvgWorkTime($pdo);
-        
-        
+    public function calculateQueueNum($pdo) {
         // get the queue number of the client
         
         // sql to get the list of all clients assigned to this client's 
@@ -108,9 +96,33 @@ class client {
             }
         }
         
+        return $queue_num;
+        
+    }
+    
+    
+    public function calculateWaitTime($pdo) {
+        // function that calculates the wait time, when taking into
+        // consideration the average wait time for the assigned
+        // specialist
+        
+
+        
+        // get the average time spent on a client
+        $assigned_spec = new specialist();
+        $assigned_spec->generateSpecialistByID($pdo, $this->specialist_id);
+        $avg_time = $assigned_spec->calcAvgWorkTime($pdo);
+        
+        $queue_num = $this->calculateQueueNum($pdo);
+        
         // if average time is impossible to calculate
         // (db error, specialist has 0 clients served, etc)
         // return -1 to indicate that the time is not available
+        
+        if ($queue_num == 0 and $avg_time == -1){
+            return 0;
+        }
+        
         if ($avg_time == -1) {
             return -1 ;
         }

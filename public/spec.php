@@ -117,11 +117,6 @@ function displayCurrentClient($clients) {
     
 }
 
-
-// get root URL
-//$parsedUrl = parse_url('http://localhost/some/folder/containing/something/here/or/there');
-//$root = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . '/';
-
 function showActions($clients) {
     
     if (count($clients) < 1){
@@ -129,33 +124,49 @@ function showActions($clients) {
     }
     
     if (isset($_POST["currently_serving"])) {
-        echo "<form method=\"post\" >";
-        echo "<input type=\"number\" name=\"finished_serving\" style=\"display: none;\" value=\"".$clients[0]->client_id."\"/>";
-        echo "<button type=\"submit\" class=\"btn btn-danger\">Pabaigti susitikimą</button>";
-        echo "</form>";
+        $output =  "<form method=\"post\" >";
+        $output .= "<input type=\"number\" name=\"finished_serving\" style=\"display: none;\" value=\"".$clients[0]->client_id."\"/>";
+        $output .= "<button type=\"submit\" class=\"btn btn-danger\">Pabaigti susitikimą</button>";
+        $output .= "</form>";
     } else {
-        echo "<form method=\"post\" >";
-        echo "<input type=\"number\" name=\"currently_serving\" style=\"display: none;\" value=\"".$clients[0]->client_id."\"/>";
-        echo "<button type=\"submit\" class=\"btn btn-info\">Pradėti susitikimą</button>";
-        echo "</form>";
+        $output =  "<form method=\"post\" >";
+        $output .= "<input type=\"number\" name=\"currently_serving\" style=\"display: none;\" value=\"".$clients[0]->client_id."\"/>";
+        $output .= "<button type=\"submit\" class=\"btn btn-info\">Pradėti susitikimą</button>";
+        $output .= "</form>";
     }
+    
+    echo $output;
 }
 
+function showLastClientInfo($pdo) {
+    $last_client = new src\entity\client();
+    
+    if (!isset($_POST["finished_serving"])) {
+        return;
+    }
+    
+    $last_client->generateClientByID($pdo, $_POST["finished_serving"]);
+    
+    // gets the time spent on last client in seconds
+    $time_spent = $last_client->appointment_end_time - $last_client->appointment_start_time; 
+    $time_spent_str = gmdate("H:i:s", intval($time_spent, 10));
+    
+    
+    $output =  "Praeito kliento informacija: <br>";
+    $output .=  "Skaičius: <b>".$last_client->client_id."</b><br>";
+    $output .= "Vardas: <b>".$last_client->name." ".$last_client->surname."</b><br>";
+    $output .= "E.paštas: <b>".$last_client->email."</b><br> Susitikimo tema: <b>".$last_client->reason."</b><br>";
+    $output .= "Praleistas laikas aptarnaujant: <b>".$time_spent_str."</b><br>";
+    
+    echo $output;
+}
 
 // load the full page when a specialist ID is provided
 // otherwise load a specialist selection page
 if (isset($_GET["specialist_id"])) { 
     
     $current_spec = new src\entity\specialist();
-    
     $current_spec->generateSpecialistByID($pdo, $_GET["specialist_id"]);
-    
-    
-    
-
-    
-
-    
     
     if (isset($_POST["currently_serving"])) {
         
@@ -170,6 +181,10 @@ if (isset($_GET["specialist_id"])) {
         $finished_client->generateClientByID($pdo, $_POST["finished_serving"]);
         $finished_client->appointment_end_time = time();
         $finished_client->appointment_finished_bool = 1;
+        
+        $current_spec->clients_served += 1;
+        
+        $current_spec->flushToDB($pdo);
         $finished_client->flushToDB($pdo);
         
     }
@@ -184,11 +199,34 @@ if (isset($_GET["specialist_id"])) {
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="css/bootstrap.min.css" media="screen">
+        <link rel="stylesheet" href="css/custom.css" media="screen">
         <title>NR-NFQ-Stojamasis</title>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-            <span class="navbar-brand mb-0 h1">Sveiki atvykę!</span>
+        <nav class="navbar navbar-light bg-primary">
+            <input type="checkbox" id="navbar-toggle-cbox">
+
+            <a class="navbar-brand" href="#">NR-Sistema</a>
+            <label for="navbar-toggle-cbox" class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#navbar-header" aria-controls="navbar-header">
+                &#9776;
+            </label>
+            <div class="collapse navbar-toggleable-xs" id="navbar-header">
+
+                <ul class="nav navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/index.php">Užsakyti susitikimą</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/spec.php">Specialistams</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/view.php">Klientams</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/board.php">Švieslentė</a>
+                    </li>
+                </ul>
+            </div>
         </nav>
         <div class="container-fluid mt-3">
             <div class="row">
@@ -218,13 +256,15 @@ if (isset($_GET["specialist_id"])) {
                             displayCurrentClient($clients);
                         ?>
                     </h5>
-
-
                         <?php
                             showActions($clients);
                         ?>
                     </form>
-                    
+                    <p>
+                        <?php
+                            showLastClientInfo($pdo);
+                        ?>
+                    </p>
                 </div>
             </div>
         </div>
@@ -237,11 +277,34 @@ if (isset($_GET["specialist_id"])) {
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="css/bootstrap.min.css" media="screen">
+        <link rel="stylesheet" href="css/custom.css" media="screen">
         <title>NR-NFQ-Stojamasis</title>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-          <span class="navbar-brand mb-0 h1">Sveiki atvykę!</span>
+        <nav class="navbar navbar-light bg-primary">
+            <input type="checkbox" id="navbar-toggle-cbox">
+
+            <a class="navbar-brand" href="#">NR-Sistema</a>
+            <label for="navbar-toggle-cbox" class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#navbar-header" aria-controls="navbar-header">
+                &#9776;
+            </label>
+            <div class="collapse navbar-toggleable-xs" id="navbar-header">
+
+                <ul class="nav navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/index.php">Užsakyti susitikimą</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/spec.php">Specialistams</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/view.php">Klientams</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/board.php">Švieslentė</a>
+                    </li>
+                </ul>
+            </div>
         </nav>
         <div class="container"> 
             

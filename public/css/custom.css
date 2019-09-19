@@ -1,3 +1,12 @@
 .display-massive {
     font-size: 10em;
 }
+
+#navbar-toggle-cbox:checked ~ .collapse {
+    display: block;
+    width: 100vw;
+}
+
+#navbar-toggle-cbox {
+    display:none
+}

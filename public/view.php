@@ -22,110 +22,104 @@ try {
     throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
 
-
-function displayNewClientInfo($pdo, $new_client, $error_text, $has_error) {
+function showAllClientNumbers($pdo){
+    $sql = "SELECT * FROM client WHERE appointment_finished = 0 ORDER BY time_added DESC LIMIT 10;";
     
-    if ($has_error === true){
-        echo $error_text;
-    } else {
-        $assigned_specialist = new src\entity\specialist();
-        $assigned_specialist->generateSpecialistByID($pdo, $new_client->specialist_id);
+    $clients = array();
+    
+    try {
+        $query = $pdo->prepare($sql);
+        $chk = $query->execute();
         
-        $success_text =  "<h3 class=\"mt-4 mb-4\">Registrajica įvykdyta<br>";
-        $success_text .= "<h5 class=\"mt-3 mb-3\">Jūsų skaičius: <b>".$new_client->client_id."</b><br>";
-        $success_text .= "Jus aptarnaus: <b>".$assigned_specialist->name." ".$assigned_specialist->surname;
-        $success_text .= " (".$assigned_specialist->id.")";
-        $success_text .= "</b><br></h5></h3>";        
-        echo $success_text;
+        if ($chk == false) {
+            //TODO: proper error handling
+        }
+        
+        $output = $query->fetchall();
+        
+        foreach($output as $client){
+            $client_class = new src\entity\client();
+            $client_class->loadFromQueryData($client);
+            
+            // if the time difference between now and the supposed arrival of the client
+            // is bigger than 3 hours, don't show the client
+            if ($client_class->time_added - time() < 10800){
+                array_push($clients, $client_class);
+            }
+            
+            
+        }
+        
+        
+    } catch(PDOException $e) {
+        //TODO: proper error handling 
+        echo "Exception -> ";
+        var_dump($e->getMessage());
     }
+    
+    if (count($clients) < 1) {
+        echo "<option value=\"-1\" Klientų nėra.";
+        return;
+    }
+    
+    $output = "";
+    
+    foreach ( $clients as $client) {
+        $output .= "<option value=\"".$client->client_id."\">".$client->client_id."</option>";
+    }
+    
+    echo $output;
     
 }
 
-
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
+function displayClientInfo($pdo, $client) {
     
-    $has_error = false;
-    $error_text = "<div class=\"alert alert-danger\" >Nepavyko pridėti susitikimo: <br>";
-
-    
-    if (!isset($_POST["input_name"])){
-        $has_error = true;
-        $error_text .= "Nepateiktas vardas<br>";
+    if ($client->client_id == -1){
+        //TODO: proper error handling;
     }
-    $error_text .="</div>";
     
-    if ($has_error === false) {
-        $new_client = new src\entity\client();
-        
-        $new_client->getSpecialist($pdo);// find the least busy specialist
-        
-        // inputs are sanitized and processed when flushing to db
-        $new_client->name = $_POST["input_name"];
-        
-        if ($_POST["input_surname"] != "") {
-            $new_client->surname = $_POST["input_surname"];
-        }
-
-        if ($_POST["input_email"] != "") {
-            $new_client->email = $_POST["input_email"];
-        }
-        
-        if ($_POST["input_reason"] != "") {
-            $new_client->reason = $_POST["input_reason"];
-        }
-        
-        $new_client->flushToDB($pdo);
+    // get the approx. wait time as an integer
+    $wait_int_time = intval($client->calculateWaitTime($pdo), 10);
+    
+    if ($wait_int_time === -1){
+        // calculateWaitTime returned an error
+        $wait_time = "N/Aė";
+    } else if ($wait_int_time === 0) {
+        // it's time for the client to go
+        $wait_time = "0:0:0, eikite link būdelės.";
+    } else {
+        // everything is good, convert the time into "h:m:s"
+        $wait_time = gmdate("H:i:s", intval($client->calculateWaitTime($pdo), 10));
     }
+    
+    $queue_num = $client -> calculateQueueNum($pdo);
+    
+    $assigned_spec = new src\entity\specialist();
+    $assigned_spec->generateSpecialistByID($pdo, $client->specialist_id);
+    
+    
+    $output =  "Skaičius: ".$client->client_id."<br>";
+    $output .= "Paskirtas specialistas: ".$assigned_spec->name." ".$assigned_spec->surname." (".$assigned_spec->id.")<br>";
+    $output .= "Eilės numeris: ".$queue_num."<br>";
+    $output .= "Apytikslis likęs laikas: ".$wait_time."<br>";
+    
+    echo $output;
+    
+    
+}
 
+if (isset($_GET["client_id"])){ 
 
+    $current_client = new src\entity\client();
+    $current_client->generateClientByID($pdo, $_GET["client_id"]);
+    
+    if ($current_client->client_id == -1){
+        //TODO: proper error handling;
+    }
+    
+    
+    
 ?>
-<html>
-
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="css/bootstrap.min.css" media="screen">
-        <link rel="stylesheet" href="css/custom.css" media="screen">
-        <title>NR-NFQ-Stojamasis</title>
-    </head>
-
-    <body>
-        <nav class="navbar navbar-light bg-primary">
-            <input type="checkbox" id="navbar-toggle-cbox">
-
-            <a class="navbar-brand" href="#">NR-Sistema</a>
-            <label for="navbar-toggle-cbox" class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#navbar-header" aria-controls="navbar-header">
-                &#9776;
-            </label>
-            <div class="collapse navbar-toggleable-xs" id="navbar-header">
-
-                <ul class="nav navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/index.php">Užsakyti susitikimą</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/spec.php">Specialistams</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/view.php">Klientams</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/board.php">Švieslentė</a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-        <div class="container">
-            <?php
-                displayNewClientInfo($pdo, $new_client, $error_text, $has_error);
-            ?>
-        </div>
-    </body>
-
-</html>
-
-
-<?php } else {// if the request is a simple GET request ?>
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -160,27 +154,64 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
             </div>
         </nav>
         <div class="container"> 
-            <h3 class="mt-3 mb-3">Susitikimo forma:</h3>
-            <form class="mt-1" action="index.php" method="post">
-                <div class="form-group">
-                    <label for="input_name">Vardas</label>
-                    <input type="text" class="form-control" required name="input_name" placeholder="Įveskite vardą">
-                </div>
-                <div class="form-group">
-                    <label for="input_surname">Pavardė (neprivaloma)</label>
-                    <input type="text" class="form-control" name="input_surname" placeholder="Įveskite pavardę">
-                </div>              
-                <div class="form-group">
-                    <label for="input_email">E. Paštas (neprivalomas)</label>
-                    <input type="email" class="form-control" name="input_email" placeholder="Įveskite e.paštą">
-                </div>              
-                <div class="form-group">
-                    <label for="input_reason">Kodėl norite susitikti? (neprivaloma)</label>
-                    <input type="text" class="form-control" name="input_reason" placeholder="Įveskite susitikimo temą">
-                </div>
-                <button type="submit" class="btn btn-primary">Pateikti</button>
+            
+            <h3 class="mt-3 mb-3">Jūsų eilės informacija:</h3>
+            <p>
+                <?php
+                    displayClientInfo($pdo, $current_client);
+                ?>
+            </p>
+        </div>
+    </body>
+</html>
+
+<?php } else { ?>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/bootstrap.min.css" media="screen">
+        <link rel="stylesheet" href="css/custom.css" media="screen">
+        <title>NR-NFQ-Stojamasis</title>
+    </head>
+    <body>
+        <nav class="navbar navbar-light bg-primary">
+            <input type="checkbox" id="navbar-toggle-cbox">
+
+            <a class="navbar-brand" href="#">NR-Sistema</a>
+            <label for="navbar-toggle-cbox" class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#navbar-header" aria-controls="navbar-header">
+                &#9776;
+            </label>
+            <div class="collapse navbar-toggleable-xs" id="navbar-header">
+
+                <ul class="nav navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/index.php">Užsakyti susitikimą</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/spec.php">Specialistams</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/view.php">Klientams</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/board.php">Švieslentė</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container"> 
+            
+            <h3 class="mt-3 mb-3">Pasirinkite savo eilės skaičių:</h3>
+            <form class="mt-1 form-inline" action="view.php" method="get">
+                <select class="form-control mt-3" name="client_id">
+                    <?php
+                        showAllClientNumbers($pdo);
+                    ?>
+                </select>
+                <button type="submit" class="btn btn-primary mt-3 ml-3">Pateikti</button>
             </form>
         </div>
     </body>
 </html>
+
 <?php } ?>
