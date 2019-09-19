@@ -111,10 +111,11 @@ function displayClientInfo($pdo, $client) {
 if (isset($_GET["client_id"])){ 
 
     $current_client = new src\entity\client();
-    $current_client->generateClientByID($pdo, $_GET["client_id"]);
+    $current_client->generateClientByRandomLink($pdo, $_GET["client_id"]);
     
-    if ($current_client->client_id == -1){
+    if ($current_client->client_id == NULL){
         //TODO: proper error handling;
+        die("Client not found");
     }
     
     

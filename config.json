@@ -1,5 +1,5 @@
 {
     "dsn": "mysql:host=localhost;dbname=nfq;charset=utf8",
     "dbuser": "nfq",
-    "dbpass": "********"
+    "dbpass": "caughtinalandslide"
 }

@@ -31,7 +31,7 @@ function displayNewClientInfo($pdo, $new_client, $error_text, $has_error) {
         $assigned_specialist = new src\entity\specialist();
         $assigned_specialist->generateSpecialistByID($pdo, $new_client->specialist_id);
         
-        $view_link = "/view.php?client_id=".$new_client->client_id;
+        $view_link = "/view.php?client_id=".$new_client->random_id;
         
         
         $success_text =  "<h3 class=\"mt-4 mb-4\">Registrajica įvykdyta<br>";

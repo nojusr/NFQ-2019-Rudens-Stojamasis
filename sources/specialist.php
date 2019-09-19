@@ -15,7 +15,7 @@ class specialist {
         $this->id = -1;
         $this->name = "";
         $this->surname = "";
-        $this->time_added = 0;
+        $this->time_added = time();
         $this->clients_served = 0;
     }
     

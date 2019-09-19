@@ -7,6 +7,7 @@ class client {
     
     public $client_id;
     public $specialist_id;
+    public $random_id;
     public $name;
     public $surname;
     public $email;
@@ -16,13 +17,12 @@ class client {
     public $appointment_end_time;
     public $appointment_finished_bool; 
     
-    public $wait_time;
-
     public function __construct() {
         // constructor mostly used to set variables
         // that wouldn't upset the db if they ever got
         // sent into it accidentally
         $this->specialist_id = -1;
+        $this->random_id = substr(md5(time()), 0, 7);
         $this->name = "Nepateikta";
         $this->surname = "Nepateikta";
         $this->email = "Nepateikta";
@@ -135,6 +135,33 @@ class client {
         
     }
     
+    public function generateClientByRandomLink($pdo, $link) {
+        // gets all the values of the object when given a random link ID
+        
+        // in case there ever is a duplicate random ID, grab the newest one
+        $sql = "SELECT * FROM client WHERE random_viewlink = :random_id ORDER BY time_added ASC LIMIT 1";
+        
+        try {
+            $query = $pdo->prepare($sql);
+            $chk = $query->execute(array(
+                ":random_id" => $link,
+            ));
+            
+            if ($chk == false) {
+                //TODO: proper error handling
+            }
+            
+            $output = $query->fetch();
+            $this->loadFromQueryData($output);
+            
+        } catch(PDOException $e) {
+            //TODO: proper error handling 
+            echo "Exception -> ";
+            var_dump($e->getMessage());
+        }
+        
+    }
+    
     public function generateClientByID($pdo, $id) {
         // gets all the values of the object when given a client ID
         
@@ -170,6 +197,7 @@ class client {
         
         $this->client_id = $data["cid"];
         $this->specialist_id = $data["specialist_id"];
+        $this->random_id = $data["random_viewlink"];
         $this->name = $data["name"];
         $this->surname = $data["surname"];
         $this->email = $data["email"];
@@ -198,6 +226,7 @@ class client {
                         cid,
                         specialist_id,
                         name,
+                        random_viewlink,
                         surname,
                         email,
                         reason,
@@ -211,6 +240,7 @@ class client {
                         :client_id,
                         :spec_id,
                         :name,
+                        :random_id,
                         :surname,
                         :email,
                         :reason,
@@ -221,6 +251,7 @@ class client {
             )
             ON DUPLICATE KEY UPDATE 
                    specialist_id = :spec_id2,
+                   random_viewlink = :random_id2,
                    name = :name2,
                    surname = :surname2,
                    email = :email2,
@@ -239,6 +270,7 @@ class client {
             $chk = $query->execute(array(
                 ":client_id" => $this->client_id,
                 ":spec_id" => $this->specialist_id, 
+                ":random_id" => $this->random_id,
                 ":name" => $this->name, 
                 ":surname" => $this->surname, 
                 ":email" => $this->email,
@@ -248,6 +280,7 @@ class client {
                 ":aet" => $this->appointment_end_time,
                 ":af" => $this->appointment_finished_bool,
                 ":spec_id2" => $this->specialist_id, 
+                ":random_id2" => $this->random_id,
                 ":name2" => $this->name, 
                 ":surname2" => $this->surname, 
                 ":email2" => $this->email,
