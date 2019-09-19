@@ -44,9 +44,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
         
         // inputs are sanitized and processed when flushing to db
         $new_client->name = $_POST["input_name"];
-        $new_client->surname = $_POST["input_surname"];
-        $new_client->email = $_POST["input_email"];
-        $new_client->reason = $_POST["input_reason"];
+        
+        if ($_POST["input_surname"] != "") {
+            $new_client->surname = $_POST["input_surname"];
+        }
+
+        if ($_POST["input_email"] != "") {
+            $new_client->email = $_POST["input_email"];
+        }
+        
+        if ($_POST["input_reason"] != "") {
+            $new_client->reason = $_POST["input_reason"];
+        }
         
         $new_client->flushToDB($pdo);
         

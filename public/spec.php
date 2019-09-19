@@ -74,10 +74,22 @@ function loadSpecialistSelelction($pdo) {
 // add buttons to start and stop the appointment
 // (show one button to start, when clicked, show another button to stop)
 
-function displayUpcomingClients($clients){
+function displayUpcomingClients($clients) {
+    // function to display info of upcoming clients
     
-    foreach( $clients as $client ) {
-        $output  = "<tr class=\"table-light\">";
+    if (count($clients) < 2){
+        echo "<tr class=\"table-active\" ><td colspan=5>Nėra būsimų klientų.</td></tr>";
+        return;
+    }
+    
+    foreach( $clients as $index=>$client ) {
+        
+        // skip the first client, as it is shown in the current
+        // client portion of the page
+        if ($index === 0){
+            continue;
+        }
+        $output  = "<tr class=\"table-active\">";
         $output .= "<td>".$client->client_id."</td><td>".$client->name."</td>";
         $output .= "<td>".$client->surname."</td><td>".$client->email."</td>";
         $output .= "<td>".$client->reason."</td></tr>";
@@ -85,6 +97,48 @@ function displayUpcomingClients($clients){
         echo $output;
     }
     
+}
+
+function displayCurrentClient($clients) {
+    // function used to display info of current client
+    
+    if (count($clients) < 1){
+        echo "Dabartinio kliento nėra.";
+        return;
+    }
+    
+    $current_client = $clients[0];
+    
+    $output =  "Skaičius: <b>".$current_client->client_id."</b><br>";
+    $output .= "Vardas: <b>".$current_client->name." ".$current_client->surname."</b><br>";
+    $output .= "E.paštas: <b>".$current_client->email."</b><br> Susitikimo tema: <b>".$current_client->reason."</b><br>";
+    
+    echo $output;
+    
+}
+
+
+// get root URL
+//$parsedUrl = parse_url('http://localhost/some/folder/containing/something/here/or/there');
+//$root = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . '/';
+
+function showActions($clients) {
+    
+    if (count($clients) < 1){
+        return;
+    }
+    
+    if (isset($_POST["currently_serving"])) {
+        echo "<form method=\"post\" >";
+        echo "<input type=\"number\" name=\"finished_serving\" style=\"display: none;\" value=\"".$clients[0]->client_id."\"/>";
+        echo "<button type=\"submit\" class=\"btn btn-danger\">Pabaigti susitikimą</button>";
+        echo "</form>";
+    } else {
+        echo "<form method=\"post\" >";
+        echo "<input type=\"number\" name=\"currently_serving\" style=\"display: none;\" value=\"".$clients[0]->client_id."\"/>";
+        echo "<button type=\"submit\" class=\"btn btn-info\">Pradėti susitikimą</button>";
+        echo "</form>";
+    }
 }
 
 
@@ -96,13 +150,36 @@ if (isset($_GET["specialist_id"])) {
     
     $current_spec->generateSpecialistByID($pdo, $_GET["specialist_id"]);
     
+    
+    
 
     
+
+    
+    
+    if (isset($_POST["currently_serving"])) {
+        
+        $current_client = new src\entity\client();
+        $current_client->generateClientByID($pdo, $_POST["currently_serving"]);
+        $current_client->appointment_start_time = time();
+        $current_client->flushToDB($pdo);
+
+    } else if (isset($_POST["finished_serving"])) {
+        
+        $finished_client = new src\entity\client();
+        $finished_client->generateClientByID($pdo, $_POST["finished_serving"]);
+        $finished_client->appointment_end_time = time();
+        $finished_client->appointment_finished_bool = 1;
+        $finished_client->flushToDB($pdo);
+        
+    }
+
     // if zero is passed to the limit of getCurrentClients,
     // then no limit is applied 
-    $clients = $current_spec->getCurrentClients($pdo, 0);
+    $clients = $current_spec->getCurrentClients($pdo, 15);
     
 ?>
+
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -111,38 +188,48 @@ if (isset($_GET["specialist_id"])) {
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-          <span class="navbar-brand mb-0 h1">Sveiki atvykę!</span>
+            <span class="navbar-brand mb-0 h1">Sveiki atvykę!</span>
         </nav>
         <div class="container-fluid mt-3">
-          <div class="row">
-            <div class="col-lg">
-                <table class="table">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th scope="col">Kliento Skaičius</th>
-                            <th scope="col">Vardas</th>
-                            <th scope="col">Pavardė</th>
-                            <th scope="col">E.Paštas</th>
-                            <th scope="col">Susitikimo tema</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <div class="row">
+                <div class="col-lg">
+                    <p>Būsimi klientai:</p>
+                    <table class="table">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Kliento Skaičius</th>
+                                <th scope="col">Vardas</th>
+                                <th scope="col">Pavardė</th>
+                                <th scope="col">E.Paštas</th>
+                                <th scope="col">Susitikimo tema</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                                displayUpcomingClients($clients);
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md">
+                    <p>Dabartinio kliento informacija:</p>
+                    <h5>
                         <?php
-                        displayUpcomingClients($clients);
+                            displayCurrentClient($clients);
                         ?>
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md">
-              <p>Kitas klientas: 329</p>
-              <button>Pradeti susitikima</button>
-            </div>
-          </div>
+                    </h5>
 
+
+                        <?php
+                            showActions($clients);
+                        ?>
+                    </form>
+                    
+                </div>
+            </div>
         </div>
-        
     </body>
-</html>  
+</html> 
 
 <?php } else { ?>
 

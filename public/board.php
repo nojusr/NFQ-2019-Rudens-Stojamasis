@@ -67,9 +67,12 @@ function outputTableData($pdo) {
         var_dump($e->getMessage());
     }
     
+    if (count($clients) < 1) {
+        echo "<tr class=\"table-active\"><td colspan=\"4\" class=\"display-1 display-massive\">Eilė tuščia.</td></tr>";
+    }
     
     // for every client object
-    foreach ($clients as $client){
+    foreach ($clients as $client) {
         
         // get the approx. wait time as an integer
         $wait_int_time = intval($client->calculateWaitTime($pdo), 10);
@@ -116,10 +119,10 @@ function outputTableData($pdo) {
         <table class="table table-dark">
             <thead>
                 <tr>
-                    <th scope="col">Kliento Skaičius</th>
+                    <th >Kliento Skaičius</th>
                     <th></th>
-                    <th scope="col">Darbuotojo Skaičius</th>
-                    <th scope="col">Apytikslis likęs laikas</th>
+                    <th>Darbuotojo Skaičius</th>
+                    <th>Apytikslis likęs laikas</th>
                 </tr>
             </thead>
             <tbody>
