@@ -123,6 +123,7 @@ if (isset($_GET["client_id"])){
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="refresh" content="5">
         <link rel="stylesheet" href="css/bootstrap.min.css" media="screen">
         <link rel="stylesheet" href="css/custom.css" media="screen">
         <title>NR-NFQ-Stojamasis</title>

@@ -15,6 +15,8 @@ class client {
     public $appointment_start_time;
     public $appointment_end_time;
     public $appointment_finished_bool; 
+    
+    public $wait_time;
 
     public function __construct() {
         // constructor mostly used to set variables
@@ -65,7 +67,7 @@ class client {
         
         // sql to get the list of all clients assigned to this client's 
         // specialist (with row numbers)
-        $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 0 ORDER BY time_added DESC;";
+        $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 0 ORDER BY time_added ASC;";
         
         $client_list = array();
         

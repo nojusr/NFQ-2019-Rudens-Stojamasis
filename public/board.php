@@ -25,15 +25,25 @@ try {
 }
 
 
-// it would be great if i could use AJAX to pull the nessecary data
-// required so this page could update itself periodically, but 
-// this is a pure backend task :(
+function sortClientsByWaitTime(&$clients, $pdo) {
+    usort($clients, function($a, $b) use ($pdo) {
+        $wait_time_a = $a->calculateWaitTime($pdo);
+        $wait_time_b = $b->calculateWaitTime($pdo);
+        
+        if ($wait_time_a == $wait_time_b) {
+            return 0;
+        }
+        return ($wait_time_a < $wait_time_b) ? -1 : 1;
+    });
+}
+
+
 function outputTableData($pdo) {
     // function used to display all upcoming clients
     
     
     // get all the clients from the db, initate them as objects
-    $sql = "SELECT * FROM client WHERE appointment_finished = 0 ORDER BY time_added DESC LIMIT 10;";
+    $sql = "SELECT * FROM client WHERE appointment_finished = 0 ORDER BY time_added ASC LIMIT 10;";
     
     $clients = array();
     
@@ -70,6 +80,9 @@ function outputTableData($pdo) {
     if (count($clients) < 1) {
         echo "<tr class=\"table-active\"><td colspan=\"4\" class=\"display-1 display-massive\">Eilė tuščia.</td></tr>";
     }
+    
+    
+    sortClientsByWaitTime($clients, $pdo);
     
     // for every client object
     foreach ($clients as $client) {
@@ -111,6 +124,7 @@ function outputTableData($pdo) {
     <head>
         <!--DISCLAIMER: Šis pulsapis yra pritaikytas rodymui ant didelio ekrano bei lengvam skaitymui iš didelio atstumo-->
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="refresh" content="5">
         <link rel="stylesheet" href="css/bootstrap.min.css" media="screen">
         <link rel="stylesheet" href="css/custom.css" media="screen">
         <title>NR-NFQ-Stojamasis</title>

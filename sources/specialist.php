@@ -83,7 +83,7 @@ class specialist {
             return -1;
         }
         
-        // get all of the finished appointments
+        // get the last 50 finished appointments
         $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 1 LIMIT 50";
         
         $clients = array();
