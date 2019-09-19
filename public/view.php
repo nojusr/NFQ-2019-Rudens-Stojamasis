@@ -83,7 +83,7 @@ function displayClientInfo($pdo, $client) {
     
     if ($wait_int_time === -1){
         // calculateWaitTime returned an error
-        $wait_time = "N/Aė";
+        $wait_time = "N/A";
     } else if ($wait_int_time === 0) {
         // it's time for the client to go
         $wait_time = "0:0:0, eikite link būdelės.";
@@ -203,14 +203,10 @@ if (isset($_GET["client_id"])){
         </nav>
         <div class="container"> 
             
-            <h3 class="mt-3 mb-3">Pasirinkite savo eilės skaičių:</h3>
+            <h3 class="mt-3 mb-3">Kliento kodas:</h3>
             <form class="mt-1 form-inline" action="view.php" method="get">
-                <select class="form-control mt-3" name="client_id">
-                    <?php
-                        showAllClientNumbers($pdo);
-                    ?>
-                </select>
-                <button type="submit" class="btn btn-primary mt-3 ml-3">Pateikti</button>
+                <input type="text" class="form-control" required name="client_id" placeholder="Įveskite savo kodą:">
+                <button type="submit" class="btn btn-primary">Pateikti</button>
             </form>
         </div>
     </body>

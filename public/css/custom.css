@@ -10,3 +10,7 @@
 #navbar-toggle-cbox {
     display:none
 }
+
+.form-inline > * {
+    margin: 0.2em 0.2em !important;
+}

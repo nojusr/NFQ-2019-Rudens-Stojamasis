@@ -232,22 +232,24 @@ if (isset($_GET["specialist_id"])) {
             <div class="row">
                 <div class="col-lg">
                     <p>Būsimi klientai:</p>
-                    <table class="table">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th scope="col">Kliento Skaičius</th>
-                                <th scope="col">Vardas</th>
-                                <th scope="col">Pavardė</th>
-                                <th scope="col">E.Paštas</th>
-                                <th scope="col">Susitikimo tema</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                                displayUpcomingClients($clients);
-                            ?>
-                        </tbody>
-                    </table>
+                    <div class="overflow-auto">
+                        <table class="table mb-0">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Kliento Skaičius</th>
+                                    <th scope="col">Vardas</th>
+                                    <th scope="col">Pavardė</th>
+                                    <th scope="col">E.Paštas</th>
+                                    <th scope="col">Susitikimo tema</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                    displayUpcomingClients($clients);
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="col-md">
                     <p>Dabartinio kliento informacija:</p>

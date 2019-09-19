@@ -30,9 +30,25 @@ function sortClientsByWaitTime(&$clients, $pdo) {
         $wait_time_a = $a->calculateWaitTime($pdo);
         $wait_time_b = $b->calculateWaitTime($pdo);
         
+        
+        
+        // sort by time_added if wait time is nowhere to be seen
+        if ($wait_time_a == -1 && $wait_time_b == -1) {
+            return ($a->time_added < $b->time_added) ? -1 : 1;
+        }
+        
         if ($wait_time_a == $wait_time_b) {
             return 0;
         }
+        
+        if ($wait_time_a == -1) {
+            return 1;
+        }
+        
+        if ($wait_time_b == -1) {
+            return -1;
+        }
+        
         return ($wait_time_a < $wait_time_b) ? -1 : 1;
     });
 }

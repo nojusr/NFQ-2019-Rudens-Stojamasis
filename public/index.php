@@ -22,28 +22,45 @@ try {
     throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
 
+// QR code library
+use Endroid\QrCode\QrCode;
 
 function displayNewClientInfo($pdo, $new_client, $error_text, $has_error) {
     
     if ($has_error === true){
         echo $error_text;
-    } else {
-        $assigned_specialist = new src\entity\specialist();
-        $assigned_specialist->generateSpecialistByID($pdo, $new_client->specialist_id);
-        
-        $view_link = "/view.php?client_id=".$new_client->random_id;
-        
-        
-        $success_text =  "<h3 class=\"mt-4 mb-4\">Registrajica įvykdyta<br>";
-        $success_text .= "<h5 class=\"mt-3 mb-3\">Jūsų skaičius: <b>".$new_client->client_id."</b><br>";
-        $success_text .= "Jus aptarnaus: <b>".$assigned_specialist->name." ".$assigned_specialist->surname;
-        $success_text .= " (".$assigned_specialist->id.")";
-        $success_text .= "</b><br></h5></h3>";
-        $success_text .= "<p>Galite sekti savo eilę paspaudus ";
-        $success_text .= "<a href=\"".$view_link."\">šią</a>";
-        $success_text .= " nuoruodą arba nuskenavus QR koda apačioje.<br></p>";
-        echo $success_text;
+        return;
+    } 
+    
+    $assigned_specialist = new src\entity\specialist();
+    $assigned_specialist->generateSpecialistByID($pdo, $new_client->specialist_id);
+    
+    $view_link = "/view.php?client_id=".$new_client->random_id;
+    
+    
+    $success_text =  "<h3 class=\"mt-4 mb-4\">Registrajica įvykdyta<br>";
+    $success_text .= "<h5 class=\"mt-3 mb-3\">Jūsų skaičius: <b>".$new_client->client_id."</b><br>";
+    $success_text .= "Jus aptarnaus: <b>".$assigned_specialist->name." ".$assigned_specialist->surname;
+    $success_text .= " (".$assigned_specialist->id.")";
+    $success_text .= "</b><br></h5></h3>";
+    $success_text .= "<p>Galite sekti savo eilę paspaudus ";
+    $success_text .= "<a href=\"".$view_link."\">šią</a>";
+    $success_text .= " nuoruodą arba nuskenavus QR koda apačioje.<br></p>";
+    echo $success_text;
+
+    
+}
+
+function generateLinkQRCode($new_client, $has_error) {
+    
+    if ($has_error) {
+        return;
     }
+    $full_link = "https://".$_SERVER["SERVER_NAME"]."/view.php?client_id=".$new_client->random_id;
+    $qr_code = new QrCode($full_link);
+    
+    
+    echo "<img src=\"data:image/png;base64,".base64_encode($qr_code->writeString())."\" />";
     
 }
 
@@ -124,6 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
         <div class="container">
             <?php
                 displayNewClientInfo($pdo, $new_client, $error_text, $has_error);
+                generateLinkQRCode($new_client, $has_error);
             ?>
         </div>
     </body>
