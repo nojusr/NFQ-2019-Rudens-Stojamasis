@@ -21,10 +21,10 @@ class client {
         // that wouldn't upset the db if they ever got
         // sent into it accidentally
         $this->specialist_id = -1;
-        $this->name = "Nėra";
-        $this->surname = "Nėra";
-        $this->email = "Nėra";
-        $this->reason = "Nėra";
+        $this->name = "Nepateikta";
+        $this->surname = "Nepateikta";
+        $this->email = "Nepateikta";
+        $this->reason = "Nepateikta";
         $this->time_added = time();
         $this->appointment_start_time = 0;
         $this->appointment_end_time = 0;
