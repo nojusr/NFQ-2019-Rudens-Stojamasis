@@ -32,9 +32,13 @@ function sortClientsByWaitTime(&$clients, $pdo) {
         
         
         
-        // sort by time_added if wait time is nowhere to be seen
+        // sort by appointment_day if wait time is nowhere to be seen
         if ($wait_time_a == -1 && $wait_time_b == -1) {
-            return ($a->time_added < $b->time_added) ? -1 : 1;
+            if ($a-> appointment_day == $b->appointment_day) {
+                return 0;
+            }
+            
+            return ($a->appointment_day < $b->appointment_day) ? -1 : 1;
         }
         
         if ($wait_time_a == $wait_time_b) {
@@ -59,7 +63,7 @@ function outputTableData($pdo) {
     
     
     // get all the clients from the db, initate them as objects
-    $sql = "SELECT * FROM client WHERE appointment_finished = 0 ORDER BY time_added ASC LIMIT 10;";
+    $sql = "SELECT * FROM client WHERE appointment_finished = 0 ORDER BY appointment_day ASC LIMIT 10;";
     
     $clients = array();
     
@@ -77,9 +81,8 @@ function outputTableData($pdo) {
             $client_class = new src\entity\client();
             $client_class->loadFromQueryData($client);
             
-            // if the time difference between now and the supposed arrival of the client
-            // is bigger than 3 hours, don't show the client
-            if ($client_class->time_added - time() < 10800){
+            // if the appointment is happening today
+            if ($client_class->appointment_day === strtotime('today', time())) {
                 array_push($clients, $client_class);
             }
             

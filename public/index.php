@@ -45,7 +45,7 @@ function displayNewClientInfo($pdo, $new_client, $error_text, $has_error) {
     $success_text .= "</b><br></h5></h3>";
     $success_text .= "<p>Galite sekti savo eilę paspaudus ";
     $success_text .= "<a href=\"".$view_link."\">šią</a>";
-    $success_text .= " nuoruodą arba nuskenavus QR koda apačioje.<br></p>";
+    $success_text .= " nuoruodą arba nuskenavus QR koda žemiau.<br></p>";
     echo $success_text;
 
     
@@ -69,13 +69,21 @@ function generateLinkQRCode($new_client, $has_error) {
 if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
     
     $has_error = false;
-    $error_text = "<div class=\"alert alert-danger\" >Nepavyko pridėti susitikimo: <br>";
-
+    $error_text = "<div class=\"alert alert-danger mt-3\" >Nepavyko pridėti susitikimo: <br>";
     
     if (!isset($_POST["input_name"])){
         $has_error = true;
-        $error_text .= "Nepateiktas vardas<br>";
+        $error_text .= "Nepateiktas vardas,<br>";
     }
+    
+    if (!isset($_POST["input_date"])){
+        $has_error = true;
+        $error_text .= "Nepateikta data,<br>";
+    } else if (strtotime($_POST["input_date"]) < strtotime('today', time())){
+        $has_error = true;
+        $error_text .= "Susitikimo data privalo būti lygi arba vėlesnė už šiandienos datą<br>";
+    }
+
     $error_text .="</div>";
     
     if ($has_error === false) {
@@ -83,8 +91,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
         
         $new_client->getSpecialist($pdo);// find the least busy specialist
         
+        
+        
         // inputs are sanitized and processed when flushing to db
         $new_client->name = $_POST["input_name"];
+        $new_client->appointment_day = strtotime($_POST["input_date"]);
+        
         
         if ($_POST["input_surname"] != "") {
             $new_client->surname = $_POST["input_surname"];
@@ -202,6 +214,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
                     <label for="input_reason">Kodėl norite susitikti? (neprivaloma)</label>
                     <input type="text" class="form-control" name="input_reason" placeholder="Įveskite susitikimo temą">
                 </div>
+                <div class="form-group">
+                    <label for="input_date">Susitikimo data (šiandien arba vėliau)</label>
+                    <input type="date" class="form-control" value="<?php echo date("Y-m-j"); ?>" name="input_date" required placeholder="Įveskite susitikimo datą">
+                </div>                
                 <button type="submit" class="btn btn-primary">Pateikti</button>
             </form>
         </div>

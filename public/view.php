@@ -22,59 +22,8 @@ try {
     throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
 
-function showAllClientNumbers($pdo){
-    $sql = "SELECT * FROM client WHERE appointment_finished = 0 ORDER BY time_added DESC LIMIT 10;";
-    
-    $clients = array();
-    
-    try {
-        $query = $pdo->prepare($sql);
-        $chk = $query->execute();
-        
-        if ($chk == false) {
-            //TODO: proper error handling
-        }
-        
-        $output = $query->fetchall();
-        
-        foreach($output as $client){
-            $client_class = new src\entity\client();
-            $client_class->loadFromQueryData($client);
-            
-            // if the time difference between now and the supposed arrival of the client
-            // is bigger than 3 hours, don't show the client
-            if ($client_class->time_added - time() < 10800){
-                array_push($clients, $client_class);
-            }
-            
-            
-        }
-        
-        
-    } catch(PDOException $e) {
-        //TODO: proper error handling 
-        echo "Exception -> ";
-        var_dump($e->getMessage());
-    }
-    
-    if (count($clients) < 1) {
-        echo "<option value=\"-1\" Klientų nėra.";
-        return;
-    }
-    
-    $output = "";
-    
-    foreach ( $clients as $client) {
-        $output .= "<option value=\"".$client->client_id."\">".$client->client_id."</option>";
-    }
-    
-    echo $output;
-    
-}
-
 function displayClientInfo($pdo, $client) {
-    
-    if ($client->client_id == -1){
+    if ($client->client_id == -1) {
         //TODO: proper error handling;
     }
     
@@ -83,13 +32,13 @@ function displayClientInfo($pdo, $client) {
     
     if ($wait_int_time === -1){
         // calculateWaitTime returned an error
-        $wait_time = "N/A";
+        $wait_time = "Apytikslio laiko nebuvo įmanoma apskaičiuoti.";
     } else if ($wait_int_time === 0) {
         // it's time for the client to go
-        $wait_time = "0:0:0, eikite link būdelės.";
+        $wait_time = "Jūsų eile: keliaukite link būdelės.";
     } else {
         // everything is good, convert the time into "h:m:s"
-        $wait_time = gmdate("H:i:s", intval($client->calculateWaitTime($pdo), 10));
+        $wait_time = "Apytikslis likęs laikas: ".gmdate("H:i:s", intval($client->calculateWaitTime($pdo), 10));
     }
     
     $queue_num = $client -> calculateQueueNum($pdo);
@@ -100,22 +49,59 @@ function displayClientInfo($pdo, $client) {
     
     $output =  "Skaičius: ".$client->client_id."<br>";
     $output .= "Paskirtas specialistas: ".$assigned_spec->name." ".$assigned_spec->surname." (".$assigned_spec->id.")<br>";
-    $output .= "Eilės numeris: ".$queue_num."<br>";
-    $output .= "Apytikslis likęs laikas: ".$wait_time."<br>";
+    
+    if ($client->appointment_day == strtotime('today', time())) {
+        $output .= "Eilės numeris: ".($queue_num+1)."<br>";
+        $output .= $wait_time."<br>";
+    } else {
+        $output .= "Susitikimo data: ".gmdate("Y-m-d", $client->appointment_day)."<br>";
+    }
+    
+
     
     echo $output;
     
     
 }
 
-if (isset($_GET["client_id"])){ 
+function displayNewDateInfo($new_date_status, $error_text) {
+    
+    if ($new_date_status === 0) {
+        return;
+    } else if ($new_date_status > 0) {
+        echo "<p>Data sėkmingai pakeista</p>";
+    } else if ($new_date_status < 0) {
+        echo $error_text;
+    }
+    
+}
+
+if (isset($_GET["client_id"])) { 
 
     $current_client = new src\entity\client();
     $current_client->generateClientByRandomLink($pdo, $_GET["client_id"]);
     
+    $new_date_status = 0;
+    $error_text = "<div class=\"alert alert-danger mt-3\" >Nepavyko pridėti susitikimo: <br>";
+    
     if ($current_client->client_id == NULL){
         //TODO: proper error handling;
         die("Client not found");
+    }
+    
+    if (isset($_POST["new_date"]) && $current_client->appointment_finished_bool == 0) {
+        
+        if (strtotime($_POST["new_date"]) < strtotime('today', time())){
+            $error_text .= "Nauja susitikimo data privalo būti lygi arba vėlesnė už šiandienos datą<br>";
+            $new_date_status = -1;
+        } else {
+            $current_client->appointment_day = strtotime($_POST["new_date"]);
+            $current_client->flushToDB($pdo);
+            $new_date_status = 1;
+        }
+        
+        $error_text .= "</div>";
+        
     }
     
     
@@ -156,13 +142,25 @@ if (isset($_GET["client_id"])){
             </div>
         </nav>
         <div class="container"> 
-            
-            <h3 class="mt-3 mb-3">Jūsų eilės informacija:</h3>
-            <p>
-                <?php
-                    displayClientInfo($pdo, $current_client);
-                ?>
-            </p>
+            <?php if ($current_client->appointment_finished_bool == 0) { ?>
+                <h3 class="mt-3 mb-3">Jūsų eilės informacija:</h3>
+                <p>
+                    <?php
+                        displayClientInfo($pdo, $current_client);
+                        displayNewDateInfo($new_date_status, $error_text);
+                    ?>
+                </p>
+                <form class="mt-1 form-inline" method="post">
+                    <div class="form-group">
+                        <label for="input_date" class="mr-3 mb-1">Nukelti datą vėliau:</label>
+                        <input type="date" class="form-control mr-3 mb-1" value="<?php echo gmdate("Y-m-d", $current_client->appointment_day) ?>" name="new_date" required placeholder="Įveskite susitikimo datą">
+                        <button type="submit" class="btn btn-primary">Pateikti</button>
+                    </div>                
+                    
+                </form>
+            <?php } else { ?>
+                <h3 class="mt-3">Jūsų susitikimas jau įvyko, galite uždaryti šį puslapį.</h3>
+            <?php } ?>
         </div>
     </body>
 </html>

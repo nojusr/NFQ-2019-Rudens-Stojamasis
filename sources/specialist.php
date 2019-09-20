@@ -22,9 +22,9 @@ class specialist {
     public function getCurrentClients($pdo, $limit) {
         
         if ($limit > 0) {
-            $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 0 ORDER BY time_added LIMIT :limit;";
+            $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 0 ORDER BY appointment_day LIMIT :limit;";
         } else {
-            $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 0 ORDER BY time_added;";
+            $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 0 ORDER BY appointment_day;";
         }
         
         $clients = array();
@@ -50,9 +50,8 @@ class specialist {
                 $client_class = new client();
                 $client_class->loadFromQueryData($client);
                 
-                // if the time difference between now and the supposed arrival of the client
-                // is bigger than 3 hours, don't show the client
-                if ($client_class->time_added - time() < 10800){
+                // if the appointment is happening today
+                if ($client_class->appointment_day === strtotime('today', time())) {
                     array_push($clients, $client_class);
                 }
             }

@@ -12,7 +12,7 @@ class client {
     public $surname;
     public $email;
     public $reason;
-    public $time_added;
+    public $appointment_day;
     public $appointment_start_time;
     public $appointment_end_time;
     public $appointment_finished_bool; 
@@ -27,7 +27,7 @@ class client {
         $this->surname = "Nepateikta";
         $this->email = "Nepateikta";
         $this->reason = "Nepateikta";
-        $this->time_added = time();
+        $this->appointment_day = strtotime('today', time());// unix time rounded to day
         $this->appointment_start_time = 0;
         $this->appointment_end_time = 0;
         $this->appointment_finished_bool = 0;
@@ -67,7 +67,7 @@ class client {
         
         // sql to get the list of all clients assigned to this client's 
         // specialist (with row numbers)
-        $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 0 ORDER BY time_added ASC;";
+        $sql = "SELECT * FROM client WHERE specialist_id = :sid AND appointment_finished = 0 ORDER BY appointment_day ASC;";
         
         $client_list = array();
         
@@ -139,7 +139,7 @@ class client {
         // gets all the values of the object when given a random link ID
         
         // in case there ever is a duplicate random ID, grab the newest one
-        $sql = "SELECT * FROM client WHERE random_viewlink = :random_id ORDER BY time_added ASC LIMIT 1";
+        $sql = "SELECT * FROM client WHERE random_viewlink = :random_id ORDER BY appointment_day ASC LIMIT 1";
         
         try {
             $query = $pdo->prepare($sql);
@@ -202,7 +202,7 @@ class client {
         $this->surname = $data["surname"];
         $this->email = $data["email"];
         $this->reason = $data["reason"];
-        $this->time_added = $data["time_added"];
+        $this->appointment_day = $data["appointment_day"];
         $this->appointment_start_time = $data["appointment_start_time"];
         $this->appointment_end_time = $data["appointment_end_time"];
         $this->appointment_finished_bool = $data["appointment_finished"];
@@ -230,7 +230,7 @@ class client {
                         surname,
                         email,
                         reason,
-                        time_added,
+                        appointment_day,
                         appointment_start_time,
                         appointment_end_time,
                         appointment_finished
@@ -244,7 +244,7 @@ class client {
                         :surname,
                         :email,
                         :reason,
-                        :ta,
+                        :ad,
                         :ast,
                         :aet,
                         :af
@@ -256,7 +256,7 @@ class client {
                    surname = :surname2,
                    email = :email2,
                    reason = :reason2,
-                   time_added = :ta2,
+                   appointment_day = :ad2,
                    appointment_start_time = :ast2,
                    appointment_end_time = :aet2,
                    appointment_finished = :af2;";
@@ -275,7 +275,7 @@ class client {
                 ":surname" => $this->surname, 
                 ":email" => $this->email,
                 ":reason" => $this->reason, 
-                ":ta" => $this->time_added,
+                ":ad" => $this->appointment_day,
                 ":ast" => $this->appointment_start_time, 
                 ":aet" => $this->appointment_end_time,
                 ":af" => $this->appointment_finished_bool,
@@ -285,7 +285,7 @@ class client {
                 ":surname2" => $this->surname, 
                 ":email2" => $this->email,
                 ":reason2" => $this->reason, 
-                ":ta2" => $this->time_added,
+                ":ad2" => $this->appointment_day,
                 ":ast2" => $this->appointment_start_time, 
                 ":aet2" => $this->appointment_end_time,
                 ":af2" => $this->appointment_finished_bool
