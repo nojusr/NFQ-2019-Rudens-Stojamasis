@@ -25,6 +25,7 @@ try {
 // QR code library
 use Endroid\QrCode\QrCode;
 
+
 function displayNewClientInfo($pdo, $new_client, $error_text, $has_error) {
     
     if ($has_error === true){
@@ -51,6 +52,7 @@ function displayNewClientInfo($pdo, $new_client, $error_text, $has_error) {
     
 }
 
+
 function generateLinkQRCode($new_client, $has_error) {
     
     if ($has_error) {
@@ -63,7 +65,6 @@ function generateLinkQRCode($new_client, $has_error) {
     echo "<img src=\"data:image/png;base64,".base64_encode($qr_code->writeString())."\" />";
     
 }
-
 
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
@@ -92,7 +93,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
         $new_client->getSpecialist($pdo);// find the least busy specialist
         
         
-        
         // inputs are sanitized and processed when flushing to db
         $new_client->name = $_POST["input_name"];
         $new_client->appointment_day = strtotime($_POST["input_date"]);
@@ -115,6 +115,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
 
 
 ?>
+
+
 <!DOCTYPE HTML>
 <html>
 
@@ -163,6 +165,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
 
 
 <?php } else {// if the request is a simple GET request ?>
+
+
 <!DOCTYPE HTML>
 <html>
     <head>

@@ -139,6 +139,8 @@ function outputTableData($pdo) {
 }
 
 ?>
+
+
 <!DOCTYPE HTML>
 <html>
     <head>

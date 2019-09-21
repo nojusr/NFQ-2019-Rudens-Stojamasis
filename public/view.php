@@ -112,8 +112,9 @@ if (isset($_GET["client_id"])) {
     }
     
     
-    
 ?>
+
+
 <!DOCTYPE HTML>
 <html>
     <head>
@@ -180,7 +181,10 @@ if (isset($_GET["client_id"])) {
     </body>
 </html>
 
+
 <?php } else { ?>
+
+
 <!DOCTYPE HTML>
 <html>
     <head>
@@ -225,5 +229,6 @@ if (isset($_GET["client_id"])) {
         </div>
     </body>
 </html>
+
 
 <?php } ?>

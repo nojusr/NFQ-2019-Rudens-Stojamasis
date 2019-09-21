@@ -24,6 +24,7 @@ try {
     throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
 
+
 function loadSpecialistSelelction($pdo) {
     // get all specialists in an 
     // get all the clients from the db, initate them as objects
@@ -68,12 +69,6 @@ function loadSpecialistSelelction($pdo) {
 }
 
 
-// TODO on the specialist page
-// add a list of upcoming clients
-// show current (upcoming) client
-// add buttons to start and stop the appointment
-// (show one button to start, when clicked, show another button to stop)
-
 function displayUpcomingClients($clients) {
     // function to display info of upcoming clients
     
@@ -99,6 +94,7 @@ function displayUpcomingClients($clients) {
     
 }
 
+
 function displayCurrentClient($clients) {
     // function used to display info of current client
     
@@ -116,6 +112,7 @@ function displayCurrentClient($clients) {
     echo $output;
     
 }
+
 
 function showActions($clients) {
     
@@ -137,6 +134,7 @@ function showActions($clients) {
     
     echo $output;
 }
+
 
 function showLastClientInfo($pdo) {
     $last_client = new src\entity\client();
@@ -160,6 +158,7 @@ function showLastClientInfo($pdo) {
     
     echo $output;
 }
+
 
 // load the full page when a specialist ID is provided
 // otherwise load a specialist selection page
