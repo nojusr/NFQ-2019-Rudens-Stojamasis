@@ -89,6 +89,13 @@ if (isset($_GET["client_id"])) {
         die("Client not found");
     }
     
+    if (isset($_POST["delete"]) && $current_client->appointment_finished_bool == 0) { 
+        $current_client->deleteFromDB($pdo);
+        header("Location: /index.php");
+        die();
+    }
+    
+    
     if (isset($_POST["new_date"]) && $current_client->appointment_finished_bool == 0) {
         
         if (strtotime($_POST["new_date"]) < strtotime('today', time())){
@@ -107,6 +114,7 @@ if (isset($_GET["client_id"])) {
     
     
 ?>
+<!DOCTYPE HTML>
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -158,6 +166,13 @@ if (isset($_GET["client_id"])) {
                     </div>                
                     
                 </form>
+                <form class="mt-1 form-inline" method="post">
+                    <div class="form-group">
+                        <input type="checkbox" name="delete" checked value="delete" style="display: none;">
+                        <button type="submit" class="btn btn-danger">Atšaukti susitikimą</button>
+                    </div>                
+                    
+                </form>
             <?php } else { ?>
                 <h3 class="mt-3">Jūsų susitikimas jau įvyko, galite uždaryti šį puslapį.</h3>
             <?php } ?>
@@ -166,6 +181,7 @@ if (isset($_GET["client_id"])) {
 </html>
 
 <?php } else { ?>
+<!DOCTYPE HTML>
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -203,7 +219,7 @@ if (isset($_GET["client_id"])) {
             
             <h3 class="mt-3 mb-3">Kliento kodas:</h3>
             <form class="mt-1 form-inline" action="view.php" method="get">
-                <input type="text" class="form-control" required name="client_id" placeholder="Įveskite savo kodą:">
+                <input type="text" class="form-control" required name="client_id" placeholder="Įveskite savo kodą">
                 <button type="submit" class="btn btn-primary">Pateikti</button>
             </form>
         </div>

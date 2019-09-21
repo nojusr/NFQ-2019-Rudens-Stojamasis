@@ -115,6 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
 
 
 ?>
+<!DOCTYPE HTML>
 <html>
 
     <head>
@@ -162,6 +163,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {// if the request is a POST request
 
 
 <?php } else {// if the request is a simple GET request ?>
+<!DOCTYPE HTML>
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">

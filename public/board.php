@@ -63,7 +63,7 @@ function outputTableData($pdo) {
     
     
     // get all the clients from the db, initate them as objects
-    $sql = "SELECT * FROM client WHERE appointment_finished = 0 ORDER BY appointment_day ASC LIMIT 10;";
+    $sql = "SELECT * FROM client WHERE appointment_finished = 0 ORDER BY appointment_day DESC;";
     
     $clients = array();
     
@@ -83,6 +83,7 @@ function outputTableData($pdo) {
             
             // if the appointment is happening today
             if ($client_class->appointment_day === strtotime('today', time())) {
+                
                 array_push($clients, $client_class);
             }
             
@@ -138,7 +139,7 @@ function outputTableData($pdo) {
 }
 
 ?>
-
+<!DOCTYPE HTML>
 <html>
     <head>
         <!--DISCLAIMER: Šis pulsapis yra pritaikytas rodymui ant didelio ekrano bei lengvam skaitymui iš didelio atstumo-->

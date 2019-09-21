@@ -91,7 +91,15 @@ class client {
         
         $queue_num = -1;
         
-        foreach ($client_list as $index=>$client_item) {
+        $todays_clients = array();
+        
+        foreach ($client_list as $client_item) {
+            if ($client_item["appointment_day"] === strtotime('today', time())) {
+                array_push($todays_clients, $client_item);
+            } 
+        }
+        
+        foreach ($todays_clients as $index=>$client_item) {
             if ($client_item["cid"] == $this->client_id){
                 $queue_num = $index;
                 break;
@@ -206,6 +214,29 @@ class client {
         $this->appointment_start_time = $data["appointment_start_time"];
         $this->appointment_end_time = $data["appointment_end_time"];
         $this->appointment_finished_bool = $data["appointment_finished"];
+    }
+    
+    public function deleteFromDB($pdo) {
+        $sql = "DELETE FROM client WHERE cid = :client_id";
+        
+        try {
+            
+            $query = $pdo->prepare($sql);
+            $chk = $query->execute(array(
+                ":client_id" => $this->client_id,
+            ));
+            
+            
+            if ($chk === false){
+                //TODO: proper error handling
+            }
+            
+        } catch(PDOException $e) {
+            //TODO: proper error handling
+            echo "Exception -> ";
+            var_dump($e->getMessage());
+        }
+        
     }
     
     public function flushToDB($pdo) {
